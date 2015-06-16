@@ -1,0 +1,6 @@
+*.prefs
+*.project
+*.pydevproject
+*.pyc
+*.ply
+*.stl
