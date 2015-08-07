@@ -25,7 +25,7 @@ import shutil
 import sys
 import importlib
 from distutils.core import setup, Extension
-    
+import platform
 
 # name of the c function that is generated
 # The user does not necessarily know about this.
@@ -458,7 +458,7 @@ def __checkCreateTempPath__():
     tempdir = tempfile.gettempdir()
     
     
-    swicePath = path.join(tempdir, "swice")
+    swicePath = path.join(tempdir, "swice", getPlatformString())
     if not path.exists(swicePath):
         os.mkdir(swicePath)
     if not path.exists(path.join(swicePath, "numpy.i")):
@@ -553,7 +553,11 @@ def inline(code, vars=None, cLocals=None, cGlobals=None, extracode="", includeDi
     __copyFromObject__(tempModule, varDict, cLocals, cGlobals)
     
     return return_val
-    
+
+
+def getPlatformString():
+    return platform.architecture[0]+"_"+platform.architecture[1]
+
 if __name__ == "__main__":
     
     a = 2
