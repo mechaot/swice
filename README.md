@@ -6,6 +6,8 @@ One example can be seen in swice.py when running as main-program.
 
 Another Example:
 
+```python
+
 import swice
 code = '''
     a = a*5;
@@ -13,3 +15,4 @@ code = '''
 a = np.array([1,2,3,4])
 swice.inline(code, ['a'], locals(), globals())
 print a # will print [5,10,15,20]
+```
