@@ -334,7 +334,7 @@ def __genCode__(code, varDict, genClassicAccess=True, extracode = ""):
                 varCode += __C_ACCESS_DEFINE__[dimNum] % tuple(keyList) + "\n"
             
         else:
-            raise("Error")
+            raise('Error, datatype not understood. Was "%s" for variable "%s"'%(str(type(var)), key))
             
             
     resultCode = resultCode % (varCode, code)
@@ -556,7 +556,7 @@ def inline(code, vars=None, cLocals=None, cGlobals=None, extracode="", includeDi
 
 
 def getPlatformString():
-    return platform.architecture[0]+"_"+platform.architecture[1]
+    return platform.architecture()[0]+"_"+platform.architecture()[1]
 
 if __name__ == "__main__":
     
