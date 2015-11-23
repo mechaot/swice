@@ -12,6 +12,7 @@ Created on 03.10.2014
 
 '''
 
+
 import subprocess
 import os
 from os import path
@@ -562,7 +563,7 @@ if __name__ == "__main__":
     
     a = 2
     
-    print "a was %d"%(a)
+    print("a was %d"%(a))
     
     b = np.array([1, 2, 3], dtype=np.double)
     c = np.zeros((2, 3, 4), dtype=np.uint16)
@@ -630,8 +631,8 @@ if __name__ == "__main__":
     #define PI 3.14
     '''
     
-    print inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), recompile=True, extracode = extracode)
-    print "a is %d"%(a)
-    print "done"
+    print(inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), recompile=True, extracode = extracode))
+    print("a is %d"%(a))
+    print("done")
     
     
