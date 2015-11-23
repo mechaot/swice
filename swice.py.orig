@@ -405,9 +405,6 @@ def __compileDistUtils__(hash, includeDirs, lib_dirs, libraries, doOptimizeGcc =
                 os.curdir])
     
     print(includeDirs)
-#     includeDirs.extend([numpy_include,
-#                 os.curdir,
-#                 os.environ['PYTHON_INCLUDE']])
     
     iFileName = hash + ".i"
     cFileName = hash + "."+C_FILE_SUFFIX
@@ -462,8 +459,10 @@ def __checkCreateTempPath__():
     
     tempdir = tempfile.gettempdir()
     
-    
-    swicePath = path.join(tempdir, "swice", getPlatformString())
+    swicePath = path.join(tempdir, "swice")
+    if not path.exists(swicePath):
+        os.mkdir(swicePath)
+    swicePath = path.join(swicePath, getPlatformString())
     if not path.exists(swicePath):
         os.makedirs(swicePath) #recursive
     if not path.exists(path.join(swicePath, "numpy.i")):
@@ -568,7 +567,6 @@ if __name__ == "__main__":
     a = 2
     
     print(("a was %d"%(a)))
-    print("a was %d"%(a))
     
     b = np.array([1, 2, 3], dtype=np.double)
     c = np.zeros((2, 3, 4), dtype=np.uint16)
@@ -638,8 +636,6 @@ if __name__ == "__main__":
     
     print((inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), recompile=True, extracode = extracode)))
     print(("a is %d"%(a)))
-    print(inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), recompile=True, extracode = extracode))
-    print("a is %d"%(a))
     print("done")
     
     
