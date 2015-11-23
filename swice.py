@@ -277,7 +277,10 @@ def __genInterface__(varDict):
     '''
     varString = ""
     
-    for key in varDict:
+    keyIterator = list(varDict.keys())
+    keyIterator.sort()
+    
+    for key in keyIterator:
         
         var = varDict[key]
         
@@ -312,7 +315,10 @@ def __genCode__(code, varDict, genClassicAccess=True, extracode = ""):
     resultCode = '#line 1 "user.extracode" \n'+extracode+"\n"+__CODE_TEMPLATE__
     varCode = ""
     
-    for key in varDict:
+    keyIterator = list(varDict.keys())
+    keyIterator.sort()
+    
+    for key in keyIterator:
         var = varDict[key]
         
         if type(var) in [type(5), type(5.)]:
@@ -332,6 +338,8 @@ def __genCode__(code, varDict, genClassicAccess=True, extracode = ""):
                 keyList = [key.capitalize(), "%d" % dimNum]
                 keyList.extend([key] * (1 + np.sum(list(range(dimNum)))))
                 varCode += __C_ACCESS_DEFINE__[dimNum] % tuple(keyList) + "\n"
+                varCode += "#define N%s(n1) N%s[n1]\n" % (key, key)
+                
             
         else:
             raise Exception('Error, datatype not understood. Was "%s" for variable "%s"'%(str(type(var)), key))
@@ -471,7 +479,7 @@ def __checkCreateTempPath__():
         
     return swicePath
 
-def __checkCreateLib__(code, interface, swicePath, name, recompile, includeDirs, lib_dirs, libraries):
+def __createLib__(code, interface, swicePath, name, includeDirs, lib_dirs, libraries):
     '''
         @brief Checks if a module with given code and interface has already been created. If not, a lib is created.
         
@@ -485,20 +493,18 @@ def __checkCreateLib__(code, interface, swicePath, name, recompile, includeDirs,
         @param libraries List of libraries which distutils uses for binding
     '''
     
-    libPath = path.join(swicePath, "_" + name + ".pyd")
-    if not path.exists(libPath) or recompile:
-        olddir = os.curdir
-        os.chdir(swicePath)
-        __createFiles__(code, interface, name)
-    
-        __compileDistUtils__(name, includeDirs, lib_dirs, libraries)
-        for dirpath, dirnames, filenames in os.walk(path.join(swicePath, "build")):
-            for f in filenames:
-                if f.startswith("_" + name + "."):
-                    shutil.copy2(path.join(dirpath, f), swicePath)
-                    break
-            
-        os.chdir(olddir)
+    olddir = os.curdir
+    os.chdir(swicePath)
+    __createFiles__(code, interface, name)
+
+    __compileDistUtils__(name, includeDirs, lib_dirs, libraries)
+    for dirpath, dirnames, filenames in os.walk(path.join(swicePath, "build")):
+        for f in filenames:
+            if f.startswith("_" + name + "."):
+                shutil.copy2(path.join(dirpath, f), swicePath)
+                break
+        
+    os.chdir(olddir)
 
 def inline(code, vars=None, cLocals=None, cGlobals=None, extracode="", includeDirs=[], recompile=False, lib_dirs=[], libraries=[]):
     '''
@@ -534,7 +540,6 @@ def inline(code, vars=None, cLocals=None, cGlobals=None, extracode="", includeDi
     code = __genCode__(code, varDict, extracode = extracode)
     
     hash = __getHash__(code, interface)
-    
     interface = interface.replace("module %s"%(__NAME__), "module " + hash)
     
     swicePath = __checkCreateTempPath__()
@@ -544,11 +549,20 @@ def inline(code, vars=None, cLocals=None, cGlobals=None, extracode="", includeDi
     except ValueError as e:
         sys.path.append(swicePath)
         
-    __checkCreateLib__(code, interface, swicePath, hash, recompile, includeDirs, lib_dirs, libraries)
+    
+    if not recompile:
+        try:
+            tempModule = importlib.import_module(hash)
+            imp.reload(tempModule)
+        except ImportError as e:
+            recompile = True
+    
+    if recompile:
+        __createLib__(code, interface, swicePath, hash, includeDirs, lib_dirs, libraries)
+        tempModule = importlib.import_module(hash)
+        imp.reload(tempModule)
     
     
-    tempModule = importlib.import_module(hash)
-    imp.reload(tempModule)
     
     __copyToObject__(tempModule, varDict)
     
@@ -619,7 +633,7 @@ if __name__ == "__main__":
             }
         }
     }
-    for (i = 0; i < Nd[0]; i++){
+    for (i = 0; i < Nd(0); i++){
     for (j = 0; j < Nd[1]; j++){
     if (100+10*i+1*j != d(i,j))
     printf("%d%d is not equal to %4d\n", i,j,d(i,j));
@@ -636,10 +650,11 @@ if __name__ == "__main__":
     #define PI 3.14
     '''
     
-    print((inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), recompile=True, extracode = extracode)))
-    print(("a is %d"%(a)))
     print(inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), recompile=True, extracode = extracode))
     print("a is %d"%(a))
+    print("No 1 is done")
+    print(inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), recompile=False, extracode = extracode))
+    print("a is %d"%(a))
+    print("No 2 is done")
     print("done")
-    
     
