@@ -13,7 +13,7 @@ Created on 23.11.2015
 from distutils.core import setup
 setup(name='swice',
       version='0.1',
-      description='Module to use inline C-Code in python.',
+      description="Module for using c-code inside python in very simple way. For an example run the module a a program.",
       author='Jochen Schlobohm',
       author_email='jochen.schlobohm@gmail.com',
       maintainer="Jochen Schlobohm",
@@ -21,5 +21,4 @@ setup(name='swice',
       py_modules=['swice'],
       data_files=[('', ['numpy.i'])],
       license="LGPL",
-      description="Module for using c-code inside python in very simple way. For an example run the module a a program."
-      )
+      url='https://github.com/jochenn/swice')

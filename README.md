@@ -14,7 +14,10 @@ Another Example:
 
 import swice
 code = '''
-    a = a*5;
+
+	for(int i = 0; i< Na(0); i++)
+		a(i) = a(i)*5;
+    
 '''
 a = np.array([1,2,3,4])
 swice.inline(code, ['a'], locals(), globals())
@@ -30,6 +33,10 @@ If you change additional libraries, headers or source files without altering the
 If the <code>extracode</code> is changed, the hash will change because it is simply copied into the main c-file.
 
 "__g" is a forbidden identifier for your c-code and variable names.
+
+C variable access:
+Each numpy array will be accessible by a <varName>(dim1, [dim2, [...]]). The size of each dimension is stored in N<varName>[<dim>].
+Scalars are copied into and from the module. 
 
 
 Necessary programs and libraries:

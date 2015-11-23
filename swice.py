@@ -251,14 +251,15 @@ def __genNumpyHead__(key, var, genBody=False, extern = False):
     for dim in var.shape:
         dimArgString += ", int n%d" % i
         i += 1
-    varString += "void _set%s(%s *seq%s)" % (key, dtypeString, dimArgString)
     
+    varString += "void _set%s(%s *seq%s)" % (key, dtypeString, dimArgString)
+     
     if not genBody:
         return varString + ';\n'
-    
+     
     varString += '''\n{
     %s = seq;\n''' % (key)
-    
+     
     for i in range(len(var.shape)):
         varString += "    N%s[%d] = n%d;\n" % (key, i, i + 1) 
     varString += "}\n"
@@ -365,8 +366,8 @@ def __copyToObject__(f, varDict):
             setattr(f.cvar, key, val)
         
         else:
-            # f._setb(val)
-            # getattr(f, '_set%s' % key)(val)
+            #f._setb(val)
+            getattr(f, '_set%s' % key)(val)
             pass
         
 def __copyFromObject__(f, varDict, cLocals, cGlobals):
