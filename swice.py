@@ -1,3 +1,4 @@
+from __future__ import print_function
 '''
 Created on 03.10.2014
 
@@ -14,7 +15,7 @@ Created on 03.10.2014
 
 
 import subprocess
-import os
+import os, sys
 from os import path
 import numpy as np
 # import scipy.weave
@@ -27,6 +28,7 @@ import sys
 import importlib
 from distutils.core import setup, Extension
 import platform
+import imp
 
 # name of the c function that is generated
 # The user does not necessarily know about this.
@@ -212,9 +214,9 @@ def __handleVars__(vars, cLocals, cGlobals=None):
         cGlobals = globals()
     
     for var in vars:
-        if cLocals and cLocals.has_key(var):
+        if cLocals and var in cLocals:
             varDict.update({var:cLocals[var]})
-        elif cGlobals and cGlobals.has_key(var):
+        elif cGlobals and var in cGlobals:
             varDict.update({var:cGlobals[var]})
         else:
             raise Exception('Var "%s" could not be found in locals and globals' % var)
@@ -326,16 +328,16 @@ def __genCode__(code, varDict, genClassicAccess=True, extracode = ""):
             
             dimNum = len(var.shape)
             keyList = [key, ""]
-            keyList.extend([key] * (1 + np.sum(range(dimNum))))
+            keyList.extend([key] * (1 + np.sum(list(range(dimNum)))))
             varCode += __C_ACCESS_DEFINE__[dimNum] % tuple(keyList) + "\n"
             
             if genClassicAccess:
                 keyList = [key.capitalize(), "%d" % dimNum]
-                keyList.extend([key] * (1 + np.sum(range(dimNum))))
+                keyList.extend([key] * (1 + np.sum(list(range(dimNum)))))
                 varCode += __C_ACCESS_DEFINE__[dimNum] % tuple(keyList) + "\n"
             
         else:
-            raise('Error, datatype not understood. Was "%s" for variable "%s"'%(str(type(var)), key))
+            raise 'Error, datatype not understood. Was "%s" for variable "%s"'
             
             
     resultCode = resultCode % (varCode, code)
@@ -378,9 +380,9 @@ def __copyFromObject__(f, varDict, cLocals, cGlobals):
         if type(varDict[key]) in [INT_TYPE, FLOAT_TYPE]:
             val = getattr(f.cvar, key)
         
-            if cLocals and cLocals.has_key(key):
+            if cLocals and key in cLocals:
                 cLocals.update({key:val})
-            elif cGlobals and cGlobals.has_key(key):
+            elif cGlobals and key in cGlobals:
                 cGlobals.update({key:val})
             else:
                 raise Exception('Could not assign result value "%s"' % key)
@@ -444,9 +446,13 @@ def __getHash__(code, interface):
     '''
     
     hash = hashlib.md5()
-    hash.update(code)
-    hash.update(interface)
-    return "m" + (hash.digest().encode("hex"))
+    if sys.version_info[0] == 3:
+        hash.update(code.encode("utf8"))
+        hash.update(interface.encode("utf8"))
+    else:
+        hash.update(code)
+        hash.update(interface)
+    return "m" + (hash.hexdigest())
     
 
 def __checkCreateTempPath__():
@@ -461,7 +467,7 @@ def __checkCreateTempPath__():
     
     swicePath = path.join(tempdir, "swice", getPlatformString())
     if not path.exists(swicePath):
-        os.mkdir(swicePath)
+        os.makedirs(swicePath) #recursive
     if not path.exists(path.join(swicePath, "numpy.i")):
         shutil.copy2(path.join(path.dirname(os.path.realpath(__file__)), "numpy.i"), swicePath)
         
@@ -544,7 +550,7 @@ def inline(code, vars=None, cLocals=None, cGlobals=None, extracode="", includeDi
     
     
     tempModule = importlib.import_module(hash)
-    reload(tempModule)
+    imp.reload(tempModule)
     
     __copyToObject__(tempModule, varDict)
     
@@ -563,7 +569,7 @@ if __name__ == "__main__":
     
     a = 2
     
-    print("a was %d"%(a))
+    print(("a was %d"%(a)))
     
     b = np.array([1, 2, 3], dtype=np.double)
     c = np.zeros((2, 3, 4), dtype=np.uint16)
@@ -631,8 +637,8 @@ if __name__ == "__main__":
     #define PI 3.14
     '''
     
-    print(inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), recompile=True, extracode = extracode))
-    print("a is %d"%(a))
+    print((inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), recompile=True, extracode = extracode)))
+    print(("a is %d"%(a)))
     print("done")
     
     
