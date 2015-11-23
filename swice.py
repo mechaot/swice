@@ -1,3 +1,5 @@
+#!/bin/python
+# -*- coding: utf-8 -*-
 '''
 Created on 03.10.2014
 
@@ -9,20 +11,16 @@ Created on 03.10.2014
 
 @todo: additional sorce files, includes (not tested yet), src-dir, libs & libdirs (not tested yet)
     
-
 '''
-
 
 import subprocess
 import os
 from os import path
 import numpy as np
-# import scipy.weave
 import ctypes
 import hashlib
 import tempfile
 import shutil
-# from scipy.weave import swigptr2, swigptr
 import sys
 import importlib
 from distutils.core import setup, Extension
@@ -31,7 +29,7 @@ import platform
 # name of the c function that is generated
 # The user does not necessarily know about this.
 __NAME__ = "__g"
-# suffix of the c-files. 'cpp' forces vs compiler to compile c++
+# suffix of the c-files. 'cpp' forces VISUAL STUDIO compiler to compile c++
 C_FILE_SUFFIX = "cpp"
 
 # suffix of the wrapper c-file. cxx is used when swig is set for c++
@@ -335,7 +333,7 @@ def __genCode__(code, varDict, genClassicAccess=True, extracode = ""):
                 varCode += __C_ACCESS_DEFINE__[dimNum] % tuple(keyList) + "\n"
             
         else:
-            raise('Error, datatype not understood. Was "%s" for variable "%s"'%(str(type(var)), key))
+            raise Exception('Error, datatype not understood. Was "%s" for variable "%s"'%(str(type(var)), key))
             
             
     resultCode = resultCode % (varCode, code)
@@ -405,9 +403,7 @@ def __compileDistUtils__(hash, includeDirs, lib_dirs, libraries, doOptimizeGcc =
     includeDirs.extend([numpy_include,
                 os.curdir])
     
-#     includeDirs.extend([numpy_include,
-#                 os.curdir,
-#                 os.environ['PYTHON_INCLUDE']])
+    print(includeDirs)
     
     iFileName = hash + ".i"
     cFileName = hash + "."+C_FILE_SUFFIX
@@ -458,8 +454,10 @@ def __checkCreateTempPath__():
     
     tempdir = tempfile.gettempdir()
     
-    
-    swicePath = path.join(tempdir, "swice", getPlatformString())
+    swicePath = path.join(tempdir, "swice")
+    if not path.exists(swicePath):
+        os.mkdir(swicePath)
+    swicePath = path.join(swicePath, getPlatformString())
     if not path.exists(swicePath):
         os.mkdir(swicePath)
     if not path.exists(path.join(swicePath, "numpy.i")):
@@ -490,7 +488,7 @@ def __checkCreateLib__(code, interface, swicePath, name, recompile, includeDirs,
         __compileDistUtils__(name, includeDirs, lib_dirs, libraries)
         for dirpath, dirnames, filenames in os.walk(path.join(swicePath, "build")):
             for f in filenames:
-                if f == "_" + name + ".pyd":
+                if f.startswith("_" + name + "."):
                     shutil.copy2(path.join(dirpath, f), swicePath)
                     break
             
