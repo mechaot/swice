@@ -9,7 +9,7 @@ Created on 03.10.2014
 
 @mail: jochen.schlobohm@gmail.com
 
-@todo: additional sorce files, includes (not tested yet), src-dir, libs & libdirs (not tested yet)
+@todo: additional sorce files (not tested yet), includes (not tested yet), src-dir, libs & libdirs (not tested yet), add different fileTypes
     
 '''
 
@@ -21,7 +21,6 @@ import ctypes
 import hashlib
 import tempfile
 import shutil
-import sys
 import importlib
 from distutils.core import setup, Extension
 import platform
@@ -291,7 +290,7 @@ def __genInterface__(varDict):
             varString += __genNumpyHead__(key, var)
             
         else:
-            raise "Cannot handle variable type: %s" % type(var)
+            raise Exception("Cannot handle variable type: %s" % type(var))
         
     return __INTERFACE_HEADER__ + varString + __INTERFACE_FOOTER__ + varString
 
@@ -321,7 +320,7 @@ def __genCode__(code, varDict, genClassicAccess=True, extracode = ""):
     for key in keyIterator:
         var = varDict[key]
         
-        if type(var) in [type(5), type(5.)]:
+        if type(var) in [INT_TYPE, FLOAT_TYPE]:
             typeString = __TYPEDICT__[type(var)]
             varCode += "extern %s %s;\n" % (typeString, key)
         elif type(var) == type(np.zeros(0)):
@@ -367,7 +366,8 @@ def __copyToObject__(f, varDict):
         
         else:
             # f._setb(val)
-            getattr(f, '_set%s' % key)(val)
+            # getattr(f, '_set%s' % key)(val)
+            pass
         
 def __copyFromObject__(f, varDict, cLocals, cGlobals):
     '''
@@ -393,7 +393,7 @@ def __copyFromObject__(f, varDict, cLocals, cGlobals):
                 raise Exception('Could not assign result value "%s"' % key)
         
     
-def __compileDistUtils__(hash, includeDirs, lib_dirs, libraries, doOptimizeGcc = True):
+def __compileDistUtils__(hash, includeDirs, lib_dirs, libraries, doOptimizeGcc = True, additonalSources = []):
     '''
         Compiles a inline c module with the distutils. First a swig interface is used to generated swig wrapper coder which is than compiled into a python module.
         
@@ -412,10 +412,6 @@ def __compileDistUtils__(hash, includeDirs, lib_dirs, libraries, doOptimizeGcc =
     includeDirs.extend([numpy_include,
                 os.curdir])
     
-    print(includeDirs)
-#     includeDirs.extend([numpy_include,
-#                 os.curdir,
-#                 os.environ['PYTHON_INCLUDE']])
     
     iFileName = hash + ".i"
     cFileName = hash + "."+C_FILE_SUFFIX
@@ -428,10 +424,13 @@ def __compileDistUtils__(hash, includeDirs, lib_dirs, libraries, doOptimizeGcc =
     extra_compile_args = []
     if doOptimizeGcc:
         extra_compile_args = ["-pthread","-O3","-march=native","-mtune=native"]
-    
+
+
+    sourcesList = [cFileName, cWrapFileName]
+    sourcesList.extend(additonalSources)
     
     module1 = Extension('_%s' % hash,
-                        sources=[cFileName, cWrapFileName],
+                        sources=sourcesList,
                         library_dirs=lib_dirs,
                         libraries=libraries,
                         include_dirs=includeDirs,
@@ -479,7 +478,7 @@ def __checkCreateTempPath__():
         
     return swicePath
 
-def __createLib__(code, interface, swicePath, name, includeDirs, lib_dirs, libraries):
+def __createLib__(code, interface, swicePath, name, includeDirs, lib_dirs, libraries, additionalSources = []):
     '''
         @brief Checks if a module with given code and interface has already been created. If not, a lib is created.
         
@@ -491,13 +490,14 @@ def __createLib__(code, interface, swicePath, name, includeDirs, lib_dirs, libra
         @param includeDirs List of directories in which distutils looks for headers needed
         @param lib_dirs List of directories in which distutils looks for libs needed
         @param libraries List of libraries which distutils uses for binding
+        @param additionalSources List of additional source files that are needed for the module. Should include full path or be in the local directory.
     '''
     
     olddir = os.curdir
     os.chdir(swicePath)
     __createFiles__(code, interface, name)
 
-    __compileDistUtils__(name, includeDirs, lib_dirs, libraries)
+    __compileDistUtils__(name, includeDirs, lib_dirs, libraries, additionalSources)
     for dirpath, dirnames, filenames in os.walk(path.join(swicePath, "build")):
         for f in filenames:
             if f.startswith("_" + name + "."):
@@ -506,7 +506,7 @@ def __createLib__(code, interface, swicePath, name, includeDirs, lib_dirs, libra
         
     os.chdir(olddir)
 
-def inline(code, vars=None, cLocals=None, cGlobals=None, extracode="", includeDirs=[], recompile=False, lib_dirs=[], libraries=[]):
+def inline(code, vars=None, cLocals=None, cGlobals=None, extracode="", includeDirs=[], lib_dirs=[], libraries=[], additionalSources = [], recompile=False):
     '''
         Excecutes given c-code. Generates a swig wrapper module and maps paython variables into the c-domain. May handle int, float and ndarray. ndarray are not cipied but mapped.
         Makes variables from "vars" accesible in the c-domain.
@@ -521,9 +521,10 @@ def inline(code, vars=None, cLocals=None, cGlobals=None, extracode="", includeDi
         @param cGLobals Second dictionary to find the value to change 
         @param extracode c-code which is accessible in the c-domain
         @param includeDirs List of directories in which distutils looks for headers needed
-        @param recompile If True, the lib is recreated, even if it already exists.
         @param lib_dirs List of directories in which distutils looks for libs needed
         @param libraries List of libraries which distutils uses for binding
+        @param additionalSources List of additional source files that are needed for the module. Should include full path or be in the local directory.
+        @param recompile If True, the lib is recreated, even if it already exists.
     '''
     varDict = dict()
     if vars:
@@ -558,7 +559,7 @@ def inline(code, vars=None, cLocals=None, cGlobals=None, extracode="", includeDi
             recompile = True
     
     if recompile:
-        __createLib__(code, interface, swicePath, hash, includeDirs, lib_dirs, libraries)
+        __createLib__(code, interface, swicePath, hash, includeDirs, lib_dirs, libraries, additionalSources)
         tempModule = importlib.import_module(hash)
         imp.reload(tempModule)
     
@@ -650,10 +651,10 @@ if __name__ == "__main__":
     #define PI 3.14
     '''
     
-    print(inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), recompile=True, extracode = extracode))
+    print(inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), extracode = extracode, recompile=True))
     print("a is %d"%(a))
     print("No 1 is done")
-    print(inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), recompile=False, extracode = extracode))
+    print(inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), extracode = extracode, recompile=False))
     print("a is %d"%(a))
     print("No 2 is done")
     print("done")
