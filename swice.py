@@ -46,6 +46,15 @@ __CODE_TEMPLATE__ = r'''
 #define double(n1) ((double)n1)
 #define int(n1) ((int)n1)
 #define float(n1) ((float)n1)
+#define int8_t(n1) ((int8_t)n1)
+#define uint8_t(n1) ((uint8_t)n1)
+#define int16_t(n1) ((int16_t)n1)
+#define uint16_t(n1) ((uint16_t)n1)
+#define int32_t(n1) ((int32_t)n1)
+#define uint32_t(n1) ((uint32_t)n1)
+#define int64_t(n1) ((int64_t)n1)
+#define uint64_t(n1) ((uint64_t)n1)
+
 
 extern int return_val;
 
