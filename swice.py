@@ -41,6 +41,7 @@ __CODE_TEMPLATE__ = r'''
 /* swice generated c++-file */
 #include "Python.h"
 #include <stdio.h>
+#include <stdint.h>
 
 #define double(n1) ((double)n1)
 #define int(n1) ((int)n1)
@@ -61,75 +62,6 @@ CODE_PATH = __NAME__ + ".c"
 # path to the generated c++-file
 __CODE_PATH__ = __NAME__ + "."+C_FILE_SUFFIX
 
-# header for the generated swig interface
-__INTERFACE_HEADER__ = '''/* '''+__NAME__+'''.i */
-%module '''+__NAME__+'''
-%{
-#define SWIG_FILE_WITH_INIT
-#include <stdio.h>
-int return_val;
-'''
-
-
-# Footer of the swig interfaces. It generates typemaps for numpy arrays in various types and for up to 4 dimensions.
-# There no known way to have typemaps for arbitrary dimensions. (as of June 2015)
-
-__INTERFACE_FOOTER__ = '''
-extern int '''+__NAME__+'''();
-%}
- 
-%include "numpy.i"
-%init %{
-import_array();
-%}
-%apply (double* INPLACE_ARRAY1, int DIM1) {(double* seq, int n1)};
-%apply (double* INPLACE_ARRAY2, int DIM1, int DIM2) {(double* seq, int n1, int n2)};
-%apply (double* INPLACE_ARRAY3, int DIM1, int DIM2, int DIM3) {(double* seq, int n1, int n2, int n3)};
-%apply (double* INPLACE_ARRAY4, int DIM1, int DIM2, int DIM3, int DIM4) {(double* seq, int n1, int n2, int n3, int n4)};
-%apply (float* INPLACE_ARRAY1, int DIM1) {(float* seq, int n1)};
-%apply (float* INPLACE_ARRAY2, int DIM1, int DIM2) {(float* seq, int n1, int n2)};
-%apply (float* INPLACE_ARRAY3, int DIM1, int DIM2, int DIM3) {(float* seq, int n1, int n2, int n3)};
-%apply (float* INPLACE_ARRAY4, int DIM1, int DIM2, int DIM3, int DIM4) {(float* seq, int n1, int n2, int n3, int n4)};
- 
-%apply (unsigned short* INPLACE_ARRAY1, int DIM1) {(unsigned short* seq, int n1)};
-%apply (unsigned short* INPLACE_ARRAY2, int DIM1, int DIM2) {(unsigned short* seq, int n1, int n2)};
-%apply (unsigned short* INPLACE_ARRAY3, int DIM1, int DIM2, int DIM3) {(unsigned short* seq, int n1, int n2, int n3)};
-%apply (unsigned short* INPLACE_ARRAY4, int DIM1, int DIM2, int DIM3, int DIM4) {(unsigned short* seq, int n1, int n2, int n3, int n4)};
-%apply (short* INPLACE_ARRAY1, int DIM1) {(short* seq, int n1)};
-%apply (short* INPLACE_ARRAY2, int DIM1, int DIM2) {(short* seq, int n1, int n2)};
-%apply (short* INPLACE_ARRAY3, int DIM1, int DIM2, int DIM3) {(short* seq, int n1, int n2, int n3)};
-%apply (short* INPLACE_ARRAY4, int DIM1, int DIM2, int DIM3, int DIM4) {(short* seq, int n1, int n2, int n3, int n4)};
-
-%apply (unsigned char* INPLACE_ARRAY1, int DIM1) {(unsigned char* seq, int n1)};
-%apply (unsigned char* INPLACE_ARRAY2, int DIM1, int DIM2) {(unsigned char* seq, int n1, int n2)};
-%apply (unsigned char* INPLACE_ARRAY3, int DIM1, int DIM2, int DIM3) {(unsigned char* seq, int n1, int n2, int n3)};
-%apply (unsigned char* INPLACE_ARRAY4, int DIM1, int DIM2, int DIM3, int DIM4) {(unsigned char* seq, int n1, int n2, int n3, int n4)};
-%apply (char* INPLACE_ARRAY1, int DIM1) {(char* seq, int n1)};
-%apply (char* INPLACE_ARRAY2, int DIM1, int DIM2) {(char* seq, int n1, int n2)};
-%apply (char* INPLACE_ARRAY3, int DIM1, int DIM2, int DIM3) {(char* seq, int n1, int n2, int n3)};
-%apply (char* INPLACE_ARRAY4, int DIM1, int DIM2, int DIM3, int DIM4) {(char* seq, int n1, int n2, int n3, int n4)};
-
-%apply (unsigned int* INPLACE_ARRAY1, int DIM1) {(unsigned int* seq, int n1)};
-%apply (unsigned int* INPLACE_ARRAY2, int DIM1, int DIM2) {(unsigned int* seq, int n1, int n2)};
-%apply (unsigned int* INPLACE_ARRAY3, int DIM1, int DIM2, int DIM3) {(unsigned int* seq, int n1, int n2, int n3)};
-%apply (unsigned int* INPLACE_ARRAY4, int DIM1, int DIM2, int DIM3, int DIM4) {(unsigned int* seq, int n1, int n2, int n3, int n4)};
-%apply (int* INPLACE_ARRAY1, int DIM1) {(int* seq, int n1)};
-%apply (int* INPLACE_ARRAY2, int DIM1, int DIM2) {(int* seq, int n1, int n2)};
-%apply (int* INPLACE_ARRAY3, int DIM1, int DIM2, int DIM3) {(int* seq, int n1, int n2, int n3)};
-%apply (int* INPLACE_ARRAY4, int DIM1, int DIM2, int DIM3, int DIM4) {(int* seq, int n1, int n2, int n3, int n4)};
-
-%apply (unsigned long* INPLACE_ARRAY1, int DIM1) {(unsigned long* seq, int n1)};
-%apply (unsigned long* INPLACE_ARRAY2, int DIM1, int DIM2) {(unsigned long* seq, int n1, int n2)};
-%apply (unsigned long* INPLACE_ARRAY3, int DIM1, int DIM2, int DIM3) {(unsigned long* seq, int n1, int n2, int n3)};
-%apply (unsigned long* INPLACE_ARRAY4, int DIM1, int DIM2, int DIM3, int DIM4) {(unsigned long* seq, int n1, int n2, int n3, int n4)};
-%apply (long* INPLACE_ARRAY1, int DIM1) {(long* seq, int n1)};
-%apply (long* INPLACE_ARRAY2, int DIM1, int DIM2) {(long* seq, int n1, int n2)};
-%apply (long* INPLACE_ARRAY3, int DIM1, int DIM2, int DIM3) {(long* seq, int n1, int n2, int n3)};
-%apply (long* INPLACE_ARRAY4, int DIM1, int DIM2, int DIM3, int DIM4) {(long* seq, int n1, int n2, int n3, int n4)};
- 
-extern int '''+__NAME__+'''();
-'''
-
 # get the python types of numbers
 INT_TYPE = type(5)
 FLOAT_TYPE = type(5.5)
@@ -141,16 +73,73 @@ __TYPEDICT__ = {INT_TYPE:"int",
 
 # Dictionary to map ndarray types tp c-types
 # TODO: Find a more convenient and platform independend way
-__NUMPY_TYPE_DICT__ = {np.dtype("ubyte"): "unsigned char",
+__NUMPY_TYPE_DICT__ = {np.dtype("ubyte"): "uint8_t",
+                   np.dtype("byte"): "int8_t",
+                   np.dtype("uint16"): "uint16_t",
+                   np.dtype("int16"): "int16_t",
+                   np.dtype("uint32"): "uint32_t",
+                   np.dtype("int32"): "int32_t",
+                   np.dtype("uint64"): "uint64_t",
+                   np.dtype("int64"): "int64_t",
+                   np.dtype("float32"): "float",
+                   np.dtype("float64"): "double"}
+
+# Dictionary to map ndarray types tp c-types
+# TODO: Find a more convenient and platform independend way
+__NUMPY_TYPE_DICT__TEST = {np.dtype("ubyte"): "unsigned char",
                    np.dtype("byte"): "char",
                    np.dtype("uint16"): "unsigned short",
                    np.dtype("int16"): "short",
                    np.dtype("uint32"): "unsigned int",
                    np.dtype("int32"): "int",
-                   np.dtype("uint64"): "unsigned long",
-                   np.dtype("int64"): "long",
+                   np.dtype("uint64"): "unsigned long long",
+                   np.dtype("int64"): "long long",
                    np.dtype("float32"): "float",
                    np.dtype("float64"): "double"}
+
+
+
+__SWIG_INTERFACE_TYPEMAPS_ARRAYS__=[]
+   
+for key, typeString in __NUMPY_TYPE_DICT__.items():
+    __SWIG_INTERFACE_TYPEMAPS_ARRAYS__.append("%%apply (%s* INPLACE_ARRAY1, int DIM1) {(%s* seq, int n1)};"%(typeString, typeString))
+    __SWIG_INTERFACE_TYPEMAPS_ARRAYS__.append("%%apply (%s* INPLACE_ARRAY2, int DIM1, int DIM2) {(%s* seq, int n1, int n2)};"%(typeString, typeString))
+    __SWIG_INTERFACE_TYPEMAPS_ARRAYS__.append("%%apply (%s* INPLACE_ARRAY3, int DIM1, int DIM2, int DIM3) {(%s* seq, int n1, int n2, int n3)};"%(typeString, typeString))
+    __SWIG_INTERFACE_TYPEMAPS_ARRAYS__.append("%%apply (%s* INPLACE_ARRAY4, int DIM1, int DIM2, int DIM3, int DIM4) {(%s* seq, int n1, int n2, int n3, int n4)};"%(typeString, typeString))
+       
+__SWIG_INTERFACE_TYPEMAPS_ARRAYS__ = "\n".join(__SWIG_INTERFACE_TYPEMAPS_ARRAYS__)
+
+
+
+# header for the generated swig interface
+__INTERFACE_HEADER__ = '''/* '''+__NAME__+'''.i */
+%module '''+__NAME__+'''
+%{
+#define SWIG_FILE_WITH_INIT
+#include <stdio.h>
+#include <stdint.h>
+int return_val;
+'''
+
+
+# Footer of the swig interfaces. It generates typemaps for numpy arrays in various types and for up to 4 dimensions.
+# There no known way to have typemaps for arbitrary dimensions. (as of June 2015)
+
+__INTERFACE_FOOTER__ = '''
+extern int '''+__NAME__+'''();
+%}
+%include "stdint.i"
+%include "numpy.stdint.i"
+ 
+%init %{
+import_array();
+%}
+'''+__SWIG_INTERFACE_TYPEMAPS_ARRAYS__+'''
+ 
+extern int '''+__NAME__+'''();
+'''
+
+
 
 # c-style macros for convenient array access
 # the placeholder "%s" are reserved for the variable name and the dimension count, if needed (weave style array access) 
@@ -366,8 +355,10 @@ def __copyToObject__(f, varDict):
             setattr(f.cvar, key, val)
         
         else:
-            #f._setb(val)
-            getattr(f, '_set%s' % key)(val)
+            try:
+                getattr(f, '_set%s' % key)(val)
+            except Exception as e:
+                raise Exception("Error setting array %s: %s"%(key, str(e)))
             pass
         
 def __copyFromObject__(f, varDict, cLocals, cGlobals):
@@ -474,8 +465,8 @@ def __checkCreateTempPath__():
     swicePath = path.join(tempdir, "swice", getPlatformString())
     if not path.exists(swicePath):
         os.makedirs(swicePath) #recursive
-    if not path.exists(path.join(swicePath, "numpy.i")):
-        shutil.copy2(path.join(path.dirname(os.path.realpath(__file__)), "numpy.i"), swicePath)
+    if not path.exists(path.join(swicePath, "numpy.stdint.i")):
+        shutil.copy2(path.join(path.dirname(os.path.realpath(__file__)), "numpy.stdint.i"), swicePath)
         
     return swicePath
 
