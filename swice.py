@@ -154,7 +154,8 @@ extern int '''+__NAME__+'''();
 # the placeholder "%s" are reserved for the variable name and the dimension count, if needed (weave style array access) 
 #
 # one to four dimensions should be sufficient
-__C_ACCESS_DEFINE__ = {1:r'''#define %s%s(n1)  (%s[(n1)])''',
+__C_ACCESS_DEFINE__ = {
+                   1:r'''#define %s%s(n1)  (%s[(n1)])''',
                    2:r'''#define %s%s(n1, n2)  (%s[N%s[1]*(n1)+(n2)])''',
                    3:r'''#define %s%s(n1, n2, n3)  (%s[N%s[1]*N%s[2]*(n1)+N%s[2]*(n2)+(n3)])''',
                    4:r'''#define %s%s(n1, n2, n3, n4)  (%s[N%s[1]*N%s[2]*N%s[3]*(n1)+N%s[3]*N%s[2]*(n2)+N%s[3]*(n3)+(n4)])'''}
@@ -328,6 +329,8 @@ def __genCode__(code, varDict, genClassicAccess=True, extracode = ""):
             varCode += "\n"
             
             dimNum = len(var.shape)
+            if dimNum == 0:
+                raise Exception("0-dimensional numpy arrays are not supported by swig :(")
             keyList = [key, ""]
             keyList.extend([key] * (1 + np.sum(list(range(dimNum)))))
             varCode += __C_ACCESS_DEFINE__[dimNum] % tuple(keyList) + "\n"
@@ -581,82 +584,61 @@ def getPlatformString():
 
 if __name__ == "__main__":
     
+    from time import time
+    
     a = 2
     
-    print(("a was %d"%(a)))
-    print("a was %d"%(a))
+    b = np.random.rand(300,400,500)
+    c = np.array(b)
+    d = np.zeros_like(b)
     
-    b = np.array([1, 2, 3], dtype=np.double)
-    c = np.zeros((2, 3, 4), dtype=np.uint16)
-    for i in range(2):
-        for j in range(3):
-            for k in range(4):
-                c[i, j, k] = 1000 + i * 100 + j * 10 + k
+    e = np.array(b * 1000, dtype = np.uint16)
+    f = np.array(e)
     
-    d = np.zeros((4, 3), dtype=np.uint16)
-    for i in range(4):
-        for j in range(3):
-            d[i, j] = 100 + i * 10 + j
-    
-    e = np.zeros((2, 3, 4, 5), dtype=np.uint16)
-    for i in range(2):
-        for j in range(3):
-            for k in range(4):
-                for l in range(5):
-                    e[i, j, k, l] = 10000 + i * 1000 + j * 100 + k * 10 + l
     
     code = r'''
-    int i;
-    int j;
-    int l;
     a = a*2;
-    int k;
     
-    i = 0;
-    j = 0;
-    k = 0;
-    l = 0;
-    for (i = 0; i < Nc[0]; i++){
-        for (j = 0; j < Nc[1]; j++){
-            for (k = 0; k < Nc[2]; k++){
-                if (1000+100*i+10*j+1*k != c(i,j,k))
-                    printf("%d%d%d is not equal to %4d\n", i,j,k,c(i,j,k));
+    for (int x = 0; x < Nb[0]; x++){
+        for (int y = 0; y < Nb[1]; y++){
+            for (int z = 0; z < Nc[2]; z++){
+                d(x, y, z) = b(x, y, z) * c(x, y, z);
             }
         }
     }
     
-    for (i = 0; i < Ne[0]; i++){
-        for (j = 0; j < Ne[1]; j++){
-            for (k = 0; k < Ne[2]; k++){
-                for (l = 0; l < Ne[3]; l++){
-                    if (10000+1000*i+100*j+10*k+l != e(i,j,k,l))
-                        printf("%d%d%d%d is not equal to %4d\n", i,j,k,l,e(i,j,k,l));
-                }
+    for (int x = 0; x < Nb[0]; x++){
+        for (int y = 0; y < Nb[1]; y++){
+            for (int z = 0; z < Nc[2]; z++){
+                e(x, y, z) = e(x, y, z) * uint16_t(PI);
             }
         }
     }
-    for (i = 0; i < Nd(0); i++){
-    for (j = 0; j < Nd[1]; j++){
-    if (100+10*i+1*j != d(i,j))
-    printf("%d%d is not equal to %4d\n", i,j,d(i,j));
     
     
-    }}
-    
-    printf("extracode PI: %f\n", PI);
-    return_val = 5;
-    printf("returnVal: %d\n", return_val);
+    return_val = -5;
     '''
 
     extracode = ''' 
     #define PI 3.14
     '''
     
-    print(inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), extracode = extracode, recompile=True))
-    print("a is %d"%(a))
-    print("No 1 is done")
-    print(inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), extracode = extracode, recompile=False))
-    print("a is %d"%(a))
-    print("No 2 is done")
-    print("done")
+    tRecompile = time()
+    errorCode = inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), extracode = extracode, recompile=True)
+    tRecompile = time() - tRecompile
+    assert -5 == errorCode
+    
+    assert a == 4
+    assert np.allclose(b*c, d)
+    assert np.allclose(e ,f*3)
+    tNoCompile = time()
+    errorCode = inline(code, ['a', 'b', 'c', 'd', 'e'], locals(), globals(), extracode = extracode)
+    tNoCompile = time() - tNoCompile
+    assert -5 == errorCode
+    assert a == 8
+    assert np.allclose(b*c, d)
+    assert np.allclose(e ,f*3*3)
+    
+    print "Everything went fine!"
+    print "%f seconds with compiling and \n%f seconds without."%(tRecompile, tNoCompile)
     

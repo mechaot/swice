@@ -28,9 +28,12 @@ print(a) # will print [5,10,15,20]
 <code>return_val</code> is an integer wich will be returned when invoking <code>inline()</code>
 
 In order to find out if the given code has already been used (and therefore compiled) a hash is calculated from the generated interface and code.
-If the temporary library is already present, it will just be loaded and not recompiled. Recompiling can be forced ba setting the flag <code>recompile</code>.
+If the temporary library is already present, it will just be loaded and not recompiled. Recompiling can be forced by setting the flag <code>recompile</code>.
 If you change additional libraries, headers or source files without altering the code or interface, the hash algorithm will not notice. Setting <code>recompile</code> to True will help.
-If the <code>extracode</code> is changed, the hash will change because it is simply copied into the main c-file.
+If the <code>extracode</code> is changed, the hash will change because it is simply copied into the main C-file.
+
+By the way:
+Integer Arrays are mapped to stdint.h -types (e.g. uint8_t instead of unsigned char)
 
 "__g" is a forbidden identifier for your c-code and variable names.
 
@@ -52,4 +55,3 @@ TODOs
 - includes (not tested yet)
 - src-dir
 - libs & libdirs (not tested yet)
--  automatically find numpy.i
