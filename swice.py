@@ -12,7 +12,7 @@ Created on 03.10.2014
 @todo: additional sorce files (not tested yet), includes (not tested yet), src-dir, libs & libdirs (not tested yet), add different fileTypes
     
 '''
-
+from __future__ import print_function
 import subprocess
 import os, sys
 from os import path
@@ -639,6 +639,6 @@ if __name__ == "__main__":
     assert np.allclose(b*c, d)
     assert np.allclose(e ,f*3*3)
     
-    print "Everything went fine!"
-    print "%f seconds with compiling and \n%f seconds without."%(tRecompile, tNoCompile)
+    print ("Everything went fine!")
+    print ("%f seconds with compiling and \n%f seconds without."%(tRecompile, tNoCompile))
     
